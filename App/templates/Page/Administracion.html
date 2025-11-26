@@ -1,0 +1,254 @@
+{% extends 'Base.html' %}
+{% block title %}Administración{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">Panel de Administración</h2>
+    <div class="cards-grid" style="margin-bottom:1rem;">
+      <div class="card">
+        <h3 class="card-title">Estadísticas</h3>
+        <p class="card-description">Turnos: {{ total_turnos }} · Disponibles: {{ disponibles }} · Reservados: {{ reservados }} · Cancelados: {{ cancelados }}</p>
+        <div>
+          <h4 class="section-subtitle">Próximos turnos</h4>
+          <ul>
+            {% for t in proximos %}
+              <li>{{ t.fecha }} {{ t.hora }} - {{ t.mascota.nombre }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:1rem;">
+      <h3 class="card-title">Accesos rápidos</h3>
+      <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+        {% if request.user.is_superuser or rol_nombre == 'Administrador general' or rol_nombre == 'Recepcionista' or rol_nombre == 'Veterinario clínico' or rol_nombre == 'Veterinario especialista' %}
+          <a href="/mascotas/" class="btn">Mascotas</a>
+          <a href="/mascotas/nueva/" class="btn">Nueva Mascota</a>
+        {% endif %}
+        {% if request.user.is_superuser or rol_nombre == 'Administrador general' or rol_nombre == 'Recepcionista' %}
+          <a href="/panel/turnos/" class="btn">Panel de Turnos</a>
+          <a href="/panel/turnos/nuevo/" class="btn">Nuevo Turno</a>
+        {% endif %}
+        {% if request.user.is_superuser or rol_nombre == 'Administrador general' or rol_nombre == 'Dueño / socio' or rol_nombre == 'Soporte técnico del sistema' %}
+          <a href="/api/mascotas/" class="btn">API Mascotas</a>
+          <a href="/api/turnos/" class="btn">API Turnos</a>
+        {% endif %}
+        <a href="/password/reset/" class="btn">Resetear contraseña</a>
+      </div>
+      <div style="margin-top:0.5rem;">Tu Rol: {% if request.user.is_superuser %}SuperUsuario{% else %}{{ rol_nombre|default:'Sin rol asignado' }}{% endif %}</div>
+    </div>
+
+    <h3 class="section-title">Roles y acciones</h3>
+    <div class="cards-grid">
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Administrador general</h3>
+        <p class="card-description">Control total del sistema, usuarios, estadísticas y configuración.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Gestiona usuarios y roles</li>
+            <li>Accede a todos los paneles y reportes</li>
+            <li>Configura parámetros del sistema</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Recepcionista</h3>
+        <p class="card-description">Gestiona turnos, agenda, llamadas y registro de pacientes.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Crear, editar y cancelar turnos</li>
+            <li>Filtro y búsqueda de agenda</li>
+            <li>Registro inicial de pacientes</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Veterinario clínico</h3>
+        <p class="card-description">Atiende consultas generales y revisa historia clínica.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Acceso a historial clínico</li>
+            <li>Registro de diagnósticos y tratamientos</li>
+            <li>Gestión de turnos propios</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Veterinario especialista</h3>
+        <p class="card-description">Áreas específicas: cirugía, dermatología, cardiología, etc.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Agenda de especialidad</li>
+            <li>Registro de procedimientos y resultados</li>
+            <li>Acceso a recursos de quirófano si aplica</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Asistente veterinario</h3>
+        <p class="card-description">Ayuda en consultas y procedimientos.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Apoyo en registro de signos y medicación</li>
+            <li>Visualización de agenda del equipo</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Encargado de quirófano</h3>
+        <p class="card-description">Coordina cirugías, materiales y horarios del quirófano.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Gestión de inventario quirúrgico</li>
+            <li>Calendario de cirugías</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Técnico en laboratorio</h3>
+        <p class="card-description">Realiza análisis clínicos y carga resultados.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Registro de resultados de laboratorio</li>
+            <li>Acceso a estudios del paciente</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Encargado de farmacia</h3>
+        <p class="card-description">Gestiona medicamentos, stock y recetas.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Control de stock y vencimientos</li>
+            <li>Registro de entrega de recetas</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Peluquero canino/felino</h3>
+        <p class="card-description">Recibe turnos estéticos.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Agenda de servicios estéticos</li>
+            <li>Registro de servicios realizados</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Encargado de internación</h3>
+        <p class="card-description">Controla internaciones y medicación.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Plan de medicación por paciente</li>
+            <li>Alertas de horarios de medicación</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Cuidador temporal / guardería</h3>
+        <p class="card-description">Gestión de hospedaje y paseos.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Agenda de guardería</li>
+            <li>Registro de actividades</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Personal de limpieza</h3>
+        <p class="card-description">Mantenimiento y desinfección.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Plan de limpieza y checklist</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Encargado de stock / depósito</h3>
+        <p class="card-description">Controla insumos y productos.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Inventario y reposición</li>
+            <li>Alertas por stock bajo</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Community manager / marketing</h3>
+        <p class="card-description">Promociones y comunicación.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Campañas y publicaciones</li>
+            <li>Métricas de alcance</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Cajero</h3>
+        <p class="card-description">Cobros y facturación en caja.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Registro de cobros</li>
+            <li>Emisión de comprobantes</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Contador</h3>
+        <p class="card-description">Balances, ingresos, gastos y reportes.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Reportes contables</li>
+            <li>Resumen de caja</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Dueño / socio</h3>
+        <p class="card-description">Reportes generales y administración avanzada.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Acceso a métricas y paneles</li>
+            <li>Configuraciones clave</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Cliente registrado</h3>
+        <p class="card-description">Solicita turnos y revisa historial de su mascota.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Reserva de turnos</li>
+            <li>Consulta de historial</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Proveedor</h3>
+        <p class="card-description">Gestiona entregas y facturas.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Registro de entregas</li>
+            <li>Consulta de facturas</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+        <h3 class="card-title">Soporte técnico del sistema</h3>
+        <p class="card-description">Mantenimiento y actualización de plataforma.</p>
+        <div class="role-details" style="display:none;">
+          <ul>
+            <li>Acceso técnico</li>
+            <li>Revisión de logs y estado</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <script>
+      function toggleDetails(card){
+        var details = card.querySelector('.role-details');
+        if(details){ details.style.display = details.style.display==='none' ? 'block' : 'none'; }
+      }
+    </script>
+  </div>
+{% endblock %}

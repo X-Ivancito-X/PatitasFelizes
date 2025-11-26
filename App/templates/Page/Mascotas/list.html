@@ -1,0 +1,39 @@
+{% extends 'Base.html' %}
+{% block title %}Mascotas{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">Mascotas</h2>
+    <form method="get" style="margin-bottom:1rem; display:flex; gap:0.5rem;">
+      <input type="text" name="q" value="{{ q }}" class="form-input" placeholder="Buscar por nombre" style="max-width:300px;" />
+      <select name="order" class="form-select" style="max-width:200px;">
+        <option value="nombre" {% if order=='nombre' %}selected{% endif %}>Orden: Nombre</option>
+        <option value="especie" {% if order=='especie' %}selected{% endif %}>Orden: Especie</option>
+      </select>
+      <button class="btn" type="submit">Aplicar</button>
+      {% if request.user.is_superuser or request.user.usuario_profile.rol.nombre_rol == 'Administrador general' or request.user.usuario_profile.rol.nombre_rol == 'Recepcionista' or request.user.usuario_profile.rol.nombre_rol == 'Veterinario clínico' %}
+        <a href="/mascotas/nueva/" class="btn">Nueva Mascota</a>
+      {% endif %}
+    </form>
+    <div class="cards-grid">
+      {% for m in page_obj.object_list %}
+      <div class="card">
+        <h3 class="card-title">{{ m.nombre }}</h3>
+        <p class="card-description">{{ m.especie }}{% if m.raza %} - {{ m.raza }}{% endif %}</p>
+      </div>
+      {% empty %}
+      <p>No hay mascotas registradas.</p>
+      {% endfor %}
+    </div>
+
+    <div style="margin-top:1rem; display:flex; gap:0.5rem; align-items:center;">
+      {% if page_obj.has_previous %}
+        <a class="btn" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&order={{ order }}">Anterior</a>
+      {% endif %}
+      <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a class="btn" href="?page={{ page_obj.next_page_number }}&q={{ q }}&order={{ order }}">Siguiente</a>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

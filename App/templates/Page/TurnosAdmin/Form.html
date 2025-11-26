@@ -1,0 +1,15 @@
+{% extends 'Base.html' %}
+{% block title %}Turno{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:600px;">
+    <h2 class="section-title">Turno</h2>
+    <form method="post" class="card" style="padding:1.5rem;">
+      {% csrf_token %}
+      {{ form.as_p }}
+      {% if request.user.is_superuser or request.user.usuario_profile.rol.nombre_rol == 'Administrador general' or request.user.usuario_profile.rol.nombre_rol == 'Recepcionista' %}
+        <button class="btn btn-lg" type="submit">Guardar</button>
+      {% endif %}
+    </form>
+  </div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'Base.html' %}
+{% block title %}Panel de Turnos{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">Panel de Turnos</h2>
+    <form method="get" style="margin-bottom:1rem; display:flex; gap:0.5rem;">
+      <input type="text" name="q" value="{{ q }}" class="form-input" placeholder="Buscar por mascota" style="max-width:300px;" />
+      <select name="estado" class="form-select" style="max-width:200px;">
+        <option value="">Todos</option>
+        <option value="DISPONIBLE" {% if estado=='DISPONIBLE' %}selected{% endif %}>Disponible</option>
+        <option value="RESERVADO" {% if estado=='RESERVADO' %}selected{% endif %}>Reservado</option>
+        <option value="CANCELADO" {% if estado=='CANCELADO' %}selected{% endif %}>Cancelado</option>
+        <option value="ATENDIDO" {% if estado=='ATENDIDO' %}selected{% endif %}>Atendido</option>
+      </select>
+      <select name="order" class="form-select" style="max-width:200px;">
+        <option value="fecha" {% if order=='fecha' %}selected{% endif %}>Orden: Fecha</option>
+        <option value="hora" {% if order=='hora' %}selected{% endif %}>Orden: Hora</option>
+      </select>
+      <button class="btn" type="submit">Aplicar</button>
+      {% if request.user.is_superuser or rol_nombre == 'Administrador general' or rol_nombre == 'Recepcionista' %}
+        <a href="/panel/turnos/nuevo/" class="btn">Nuevo Turno</a>
+      {% endif %}
+    </form>
+    <div class="cards-grid">
+      {% for t in page_obj.object_list %}
+      <div class="card">
+        <h3 class="card-title">{{ t.fecha }} {{ t.hora }} - {{ t.mascota.nombre }}</h3>
+        <p class="card-description">{{ t.get_estado_display }} · Dr/a: {{ t.veterinario.id_veterinario }}</p>
+        <div style="display:flex; gap:0.5rem;">
+          {% if request.user.is_superuser or rol_nombre == 'Administrador general' or rol_nombre == 'Recepcionista' %}
+            <a href="/panel/turnos/editar/{{ t.id_turno }}/" class="btn">Editar</a>
+            <a href="/panel/turnos/eliminar/{{ t.id_turno }}/" class="btn">Eliminar</a>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <p>No hay turnos.</p>
+      {% endfor %}
+    </div>
+    <div style="margin-top:1rem; display:flex; gap:0.5rem; align-items:center;">
+      {% if page_obj.has_previous %}
+        <a class="btn" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&estado={{ estado }}&order={{ order }}">Anterior</a>
+      {% endif %}
+      <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a class="btn" href="?page={{ page_obj.next_page_number }}&q={{ q }}&estado={{ estado }}&order={{ order }}">Siguiente</a>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

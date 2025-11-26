@@ -1,0 +1,22 @@
+{% extends 'Base.html' %}
+{% block title %}Ingresar{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:600px;">
+    <h2 class="section-title">Ingresar</h2>
+    <form method="post" class="card" style="padding:1.5rem;">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-input" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <input type="password" name="password" class="form-input" required />
+      </div>
+      <button class="btn btn-lg" type="submit">Ingresar</button>
+      <p style="margin-top:1rem;">¿No tienes cuenta? <a href="/registro">Regístrate</a></p>
+      <p style="margin-top:0.5rem;"><a href="/password/reset/">Olvidé mi contraseña</a></p>
+    </form>
+  </div>
+{% endblock %}

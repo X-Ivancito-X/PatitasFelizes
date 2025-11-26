@@ -1,0 +1,180 @@
+{% extends 'Base.html' %}
+{% load static %}
+{% load lucide %}
+
+{% block title %}VetCare - Reservar Turno{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="page-hero bg-happy-owner">
+    <div class="page-hero-content">
+        <h1>Reserva tu Turno</h1>
+        <p>Programa la consulta de tu mascota de forma rápida y sencilla</p>
+    </div>
+</div>
+
+<!-- Información de Turnos -->
+<section class="section" style="background-color: var(--light-cyan);">
+    <div class="container">
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-icon-wrapper">
+                    <div class="step-icon">{% lucide "calendar" %}</div>
+                </div>
+                <h3 class="step-title">Elige tu Fecha</h3>
+            </div>
+
+            <div class="step-card">
+                <div class="step-icon-wrapper">
+                    <div class="step-icon">{% lucide "clock" %}</div>
+                </div>
+                <h3 class="step-title">Selecciona Hora</h3>
+            </div>
+
+            <div class="step-card">
+                <div class="step-icon-wrapper">
+                    <div class="step-icon">{% lucide "paw-print" %}</div>
+                </div>
+                <h3 class="step-title">Datos Mascota</h3>
+            </div>
+
+            <div class="step-card">
+                <div class="step-icon-wrapper">
+                    <div class="step-icon">{% lucide "user" %}</div>
+                </div>
+                <h3 class="step-title">Confirma Turno</h3>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Formulario de Turnos -->
+<section class="section">
+    <div class="container">
+        <div style="max-width: 800px; margin: 0 auto;">
+            <div class="card">
+                <div style="padding: 2rem;">
+                    <h2 class="section-title" style="margin-bottom: 2rem;">Completa los Datos del Turno</h2>
+                    
+                    <form method="POST" action="/turnos/" id="turnosForm">
+                        {% csrf_token %}
+                        
+                        <!-- Datos del Dueño -->
+                        <div style="margin-bottom: 2rem;">
+                            <h3 class="form-section-title">Datos del Dueño</h3>
+                            
+                            <div class="form-group">
+                                <label for="nombreDueno" class="form-label">Nombre Completo *</label>
+                                <input type="text" id="nombreDueno" name="nombreDueno" class="form-input" placeholder="Tu nombre completo" required>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="telefono" class="form-label">Teléfono *</label>
+                                    <input type="tel" id="telefono" name="telefono" class="form-input" placeholder="+54 11 1234-5678" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="email" class="form-label">Email *</label>
+                                    <input type="email" id="email" name="email" class="form-input" placeholder="tu@email.com" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Datos de la Mascota -->
+                        <div style="margin-bottom: 2rem;">
+                            <h3 class="form-section-title">Datos de la Mascota</h3>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="nombreMascota" class="form-label">Nombre de la Mascota *</label>
+                                    <input type="text" id="nombreMascota" name="nombreMascota" class="form-input" placeholder="Nombre de tu mascota" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="tipoMascota" class="form-label">Tipo de Mascota *</label>
+                                    <select id="tipoMascota" name="tipoMascota" class="form-select" required>
+                                        <option value="">Selecciona</option>
+                                        <option value="perro">Perro</option>
+                                        <option value="gato">Gato</option>
+                                        <option value="ave">Ave</option>
+                                        <option value="conejo">Conejo</option>
+                                        <option value="otro">Otro</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detalles del Turno -->
+                        <div style="margin-bottom: 2rem;">
+                            <h3 class="form-section-title">Detalles del Turno</h3>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="fecha" class="form-label">Fecha *</label>
+                                    <input type="date" id="fecha" name="fecha" class="form-input" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="hora" class="form-label">Hora *</label>
+                                    <select id="hora" name="hora" class="form-select" required>
+                                        <option value="">Selecciona hora</option>
+                                        <option value="09:00">09:00</option>
+                                        <option value="10:00">10:00</option>
+                                        <option value="11:00">11:00</option>
+                                        <option value="12:00">12:00</option>
+                                        <option value="14:00">14:00</option>
+                                        <option value="15:00">15:00</option>
+                                        <option value="16:00">16:00</option>
+                                        <option value="17:00">17:00</option>
+                                        <option value="18:00">18:00</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="servicio" class="form-label">Tipo de Consulta *</label>
+                                <select id="servicio" name="servicio" class="form-select" required>
+                                    <option value="">Selecciona el servicio</option>
+                                    <option value="consulta-general">Consulta General</option>
+                                    <option value="vacunacion">Vacunación</option>
+                                    <option value="cirugia">Cirugía</option>
+                                    <option value="emergencia">Emergencia</option>
+                                    <option value="control">Control de Rutina</option>
+                                    <option value="laboratorio">Análisis de Laboratorio</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="comentarios" class="form-label">Comentarios Adicionales</label>
+                                <textarea id="comentarios" name="comentarios" class="form-textarea" placeholder="Cuéntanos sobre los síntomas o motivo de la consulta..."></textarea>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-lg" style="width: 100%;">Confirmar Turno</button>
+
+                        <p style="text-align: center; font-size: 0.875rem; color: rgba(1, 56, 71, 0.7); margin-top: 1rem;">
+                            * Campos obligatorios. Recibirás una confirmación por email y SMS.
+                        </p>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Políticas de Turnos -->
+            <div class="policies-card">
+                <h3>Políticas de Turnos</h3>
+                <ul class="policies-list">
+                    <li>Por favor, llega 10 minutos antes de tu turno programado.</li>
+                    <li>Si necesitas cancelar o reprogramar, avísanos con al menos 24 horas de anticipación.</li>
+                    <li>Trae la libreta de vacunación de tu mascota si la tienes.</li>
+                    <li>Para emergencias, llama directamente a nuestro número de urgencias.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'Js/TurnoReservado.js' %}"></script>
+{% endblock %}

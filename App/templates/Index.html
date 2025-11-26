@@ -1,0 +1,178 @@
+{% extends 'Base.html' %}
+{% load static %}
+{% load lucide %}
+
+{% block title %}VetCare - Inicio{% endblock %}
+
+{% block content %}
+<!-- Hero Carousel -->
+<div class="hero-carousel" id="heroCarousel">
+    <div class="carousel-slide active">
+        <div class="carousel-slide-bg bg-happy-dog">
+            <div class="carousel-overlay"></div>
+        </div>
+        <div class="carousel-content">
+            <div>
+                <h1>Cuidado Profesional para tu Mascota</h1>
+                <p>Más de 15 años brindando servicios veterinarios de calidad</p>
+                <a href="/turnos" class="btn btn-lg">Reservar Turno Ahora</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="carousel-slide">
+        <div class="carousel-slide-bg bg-cat-exam">
+            <div class="carousel-overlay"></div>
+        </div>
+        <div class="carousel-content">
+            <div>
+                <h1>Atención Personalizada</h1>
+                <p>Cada mascota es única y merece un trato especial</p>
+                <a href="/turnos" class="btn btn-lg">Reservar Turno Ahora</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="carousel-slide">
+        <div class="carousel-slide-bg bg-waiting-room">
+            <div class="carousel-overlay"></div>
+        </div>
+        <div class="carousel-content">
+            <div>
+                <h1>Instalaciones Modernas</h1>
+                <p>Equipamiento de última generación para el mejor diagnóstico</p>
+                <a href="/turnos" class="btn btn-lg">Reservar Turno Ahora</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="carousel-controls">
+        <button class="carousel-btn" id="prevBtn" aria-label="Previous slide">❮</button>
+        <button class="carousel-btn" id="nextBtn" aria-label="Next slide">❯</button>
+    </div>
+
+    <div class="carousel-indicators">
+        <button class="carousel-indicator active" data-slide="0"></button>
+        <button class="carousel-indicator" data-slide="1"></button>
+        <button class="carousel-indicator" data-slide="2"></button>
+    </div>
+</div>
+
+<!-- Info Banner -->
+<section class="info-banner">
+    <div class="container">
+        <div class="info-grid">
+            <div>
+                <div class="info-item-number">15+</div>
+                <div class="info-item-text">Años de Experiencia</div>
+            </div>
+            <div>
+                <div class="info-item-number">5000+</div>
+                <div class="info-item-text">Mascotas Atendidas</div>
+            </div>
+            <div>
+                <div class="info-item-number">24/7</div>
+                <div class="info-item-text">Atención de Emergencias</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Nuestros Servicios -->
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">Nuestros Servicios</h2>
+        <p class="section-subtitle">
+            Ofrecemos una amplia gama de servicios veterinarios para cuidar la salud y bienestar de tu mascota
+        </p>
+
+        <div class="cards-grid">
+            <div class="card">
+                <div class="card-icon">{% lucide "stethoscope" %}</div>
+                <h3 class="card-title">Consultas Generales</h3>
+                <p class="card-description">Diagnóstico y tratamiento completo para tu mascota</p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">{% lucide "syringe" %}</div>
+                <h3 class="card-title">Vacunación</h3>
+                <p class="card-description">Plan completo de vacunación y prevención</p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">{% lucide "scissors" %}</div>
+                <h3 class="card-title">Cirugías</h3>
+                <p class="card-description">Intervenciones quirúrgicas con tecnología avanzada</p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">{% lucide "heart" %}</div>
+                <h3 class="card-title">Emergencias</h3>
+                <p class="card-description">Atención de urgencias 24/7 para tu tranquilidad</p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">{% lucide "clock" %}</div>
+                <h3 class="card-title">Internación</h3>
+                <p class="card-description">Cuidados intensivos y hospitalización</p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">{% lucide "test-tube" %}</div>
+                <h3 class="card-title">Laboratorio</h3>
+                <p class="card-description">Análisis clínicos completos in-house</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Banner -->
+<section class="cta-banner">
+    <div class="container">
+        <h2>¿Necesitas una Consulta?</h2>
+        <p>Reserva tu turno online de forma rápida y sencilla. Nuestro equipo está listo para atender a tu mascota.</p>
+        <a href="/turnos" class="btn btn-lg">Reservar Turno</a>
+    </div>
+</section>
+
+<!-- Por qué elegirnos -->
+<section class="section why-choose">
+    <div class="container">
+        <h2 class="section-title">¿Por Qué Elegirnos?</h2>
+        
+        <div class="cards-grid">
+            <div class="card">
+                <h3 class="card-title">Equipo Profesional</h3>
+                <p class="card-description">
+                    Veterinarios con amplia experiencia y capacitación continua en las últimas técnicas y tratamientos.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Tecnología Avanzada</h3>
+                <p class="card-description">
+                    Equipamiento de última generación para diagnósticos precisos y tratamientos efectivos.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Atención Personalizada</h3>
+                <p class="card-description">
+                    Cada mascota recibe un plan de cuidado individualizado según sus necesidades específicas.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Disponibilidad 24/7</h3>
+                <p class="card-description">
+                    Servicio de emergencias disponible las 24 horas del día, los 7 días de la semana.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'Js/CarouselFuncional.js' %}"></script>
+{% endblock %}
