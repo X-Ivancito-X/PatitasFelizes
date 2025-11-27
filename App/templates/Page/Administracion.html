@@ -49,22 +49,23 @@
         </div>
       </div>
     </div>
-    <div class="card" style="margin-bottom:1rem;">
-      <h3 class="card-title">Accesos rápidos</h3>
-      <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+    <div class="quick-links-card" style="margin-bottom:1rem;">
+      <h3 class="card-title">Accesos Rápidos</h3>
+      <p class="card-description">Enlaces directos a las funciones principales</p>
+      <div class="quick-links-grid">
         {% if request.user.is_superuser or rol_nombre == 'Administrador general' or rol_nombre == 'Recepcionista' or rol_nombre == 'Veterinario clínico' or rol_nombre == 'Veterinario especialista' %}
-          <a href="/mascotas/" class="btn">Mascotas</a>
-          <a href="/mascotas/nueva/" class="btn">Nueva Mascota</a>
+          <a href="/mascotas/" class="quick-link"><span class="quick-link-icon">{% lucide "paw-print" %}</span> Ver Mascotas</a>
+          <a href="/mascotas/nueva/" class="quick-link"><span class="quick-link-icon">{% lucide "plus" %}</span> Nueva Mascota</a>
         {% endif %}
         {% if request.user.is_superuser or rol_nombre == 'Administrador general' or rol_nombre == 'Recepcionista' %}
-          <a href="/panel/turnos/" class="btn">Panel de Turnos</a>
-          <a href="/panel/turnos/nuevo/" class="btn">Nuevo Turno</a>
+          <a href="/panel/turnos/" class="quick-link"><span class="quick-link-icon">{% lucide "calendar" %}</span> Panel de Turnos</a>
+          <a href="/panel/turnos/nuevo/" class="quick-link"><span class="quick-link-icon">{% lucide "plus" %}</span> Nuevo Turno</a>
         {% endif %}
         {% if request.user.is_superuser or rol_nombre == 'Administrador general' or rol_nombre == 'Dueño / socio' or rol_nombre == 'Soporte técnico del sistema' %}
-          <a href="/api/mascotas/" class="btn">API Mascotas</a>
-          <a href="/api/turnos/" class="btn">API Turnos</a>
+          <a href="/api/mascotas/" class="quick-link"><span class="quick-link-icon">{% lucide "file-text" %}</span> API Mascotas</a>
+          <a href="/api/turnos/" class="quick-link"><span class="quick-link-icon">{% lucide "file-text" %}</span> API Turnos</a>
         {% endif %}
-        <a href="/password/reset/" class="btn">Resetear contraseña</a>
+        <a href="/password/reset/" class="quick-link"><span class="quick-link-icon">{% lucide "user-round" %}</span> Resetear Contraseña</a>
       </div>
       <div style="margin-top:0.5rem;">Tu Rol: {% if request.user.is_superuser %}SuperUsuario{% else %}{{ rol_nombre|default:'Sin rol asignado' }}{% endif %}</div>
     </div>
