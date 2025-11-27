@@ -287,6 +287,46 @@ body {
   margin-bottom: 2rem;
 }
 
+/* Tables */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--light-blue);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.table thead {
+  background-color: var(--dark-blue);
+  color: white;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--light-blue);
+  text-align: left;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.filter-card {
+  border: 1px solid var(--light-blue);
+  border-radius: var(--radius);
+  padding: 1rem;
+  background-color: white;
+  margin-bottom: 1rem;
+}
+
 .card {
   background-color: white;
   border: 1px solid var(--light-blue);
@@ -316,6 +356,36 @@ body {
 .card-description {
   color: rgba(1, 56, 71, 0.7);
   line-height: 1.6;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  min-width: 28px;
+  padding: 0 0.5rem;
+  border-radius: 9999px;
+  background-color: var(--turquoise);
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.alert-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border: 1px dashed var(--light-blue);
+  border-radius: var(--radius);
+  background-color: #fff;
 }
 
 /* CTA Banner */
@@ -444,6 +514,39 @@ body {
 /* Forms */
 .form-group {
   margin-bottom: 1.5rem;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(1, 56, 71, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: var(--radius);
+  border: 1px solid var(--light-blue);
+  width: min(700px, 92vw);
+  max-height: 85vh;
+  overflow: auto;
+  padding: 1.5rem;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--dark-blue);
 }
 
 .form-label {

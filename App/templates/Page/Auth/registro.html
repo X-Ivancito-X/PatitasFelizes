@@ -1,33 +1,56 @@
 {% extends 'Base.html' %}
-{% block title %}Registro{% endblock %}
+{% load lucide %}
+{% block title %}Crear Cuenta{% endblock %}
 {% block content %}
 <section class="section">
-  <div class="container" style="max-width:600px;">
-    <h2 class="section-title">Registro</h2>
-    <form method="post" class="card" style="padding:1.5rem;">
-      {% csrf_token %}
-      <div class="form-group">
-        <label class="form-label">Nombre</label>
-        <input type="text" name="nombre" class="form-input" required />
+  <div class="container" style="max-width:800px;">
+    <div class="card" style="padding:2rem;">
+      <div style="display:flex; align-items:center; justify-content:center; margin-bottom:1rem;">
+        <div class="contact-icon-wrapper" style="margin:0;">{% lucide "user-plus" %}</div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Apellido</label>
-        <input type="text" name="apellido" class="form-input" required />
+      <h2 class="section-title" style="margin-bottom:0.25rem;">Crear Cuenta</h2>
+      <p class="section-subtitle">Completa tus datos para registrarte en el sistema</p>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Nombre *</label>
+            <input type="text" name="nombre" class="form-input" placeholder="Juan" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Apellido *</label>
+            <input type="text" name="apellido" class="form-input" placeholder="Pérez" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email *</label>
+            <input type="email" name="email" class="form-input" placeholder="tu@email.com" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Usuario *</label>
+            <input type="text" name="usuario" class="form-input" placeholder="juanperez" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contraseña *</label>
+            <input type="password" name="password" class="form-input" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirmar Contraseña *</label>
+            <input type="password" name="confirm_password" class="form-input" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Teléfono</label>
+            <input type="text" name="telefono" class="form-input" placeholder="+54 11 1234-5678" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dirección</label>
+            <input type="text" name="direccion" class="form-input" placeholder="Av. Ejemplo 123" />
+          </div>
+        </div>
+        <button class="btn btn-lg" type="submit" style="width:100%;">Crear Cuenta</button>
+      </form>
+      <div style="margin-top:1rem; text-align:center;">
+        <p>¿Ya tienes cuenta? <a href="/login">Inicia sesión aquí</a></p>
       </div>
-      <div class="form-group">
-        <label class="form-label">Email</label>
-        <input type="email" name="email" class="form-input" required />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Teléfono</label>
-        <input type="text" name="telefono" class="form-input" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Contraseña</label>
-        <input type="password" name="password" class="form-input" required />
-      </div>
-      <button class="btn btn-lg" type="submit">Registrarse</button>
-      <p style="margin-top:1rem;">¿Ya tienes cuenta? <a href="/login">Ingresar</a></p>
-    </form>
+    </div>
   </div>
 {% endblock %}

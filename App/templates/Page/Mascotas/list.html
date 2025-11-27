@@ -1,38 +1,74 @@
 {% extends 'Base.html' %}
+{% load lucide %}
 {% block title %}Mascotas{% endblock %}
 {% block content %}
 <section class="section">
   <div class="container">
-    <h2 class="section-title">Mascotas</h2>
-    <form method="get" style="margin-bottom:1rem; display:flex; gap:0.5rem;">
-      <input type="text" name="q" value="{{ q }}" class="form-input" placeholder="Buscar por nombre" style="max-width:300px;" />
-      <select name="order" class="form-select" style="max-width:200px;">
-        <option value="nombre" {% if order=='nombre' %}selected{% endif %}>Orden: Nombre</option>
-        <option value="especie" {% if order=='especie' %}selected{% endif %}>Orden: Especie</option>
-      </select>
-      <button class="btn" type="submit">Aplicar</button>
-      {% if request.user.is_superuser or request.user.usuario_profile.rol.nombre_rol == 'Administrador general' or request.user.usuario_profile.rol.nombre_rol == 'Recepcionista' or request.user.usuario_profile.rol.nombre_rol == 'Veterinario clínico' %}
-        <a href="/mascotas/nueva/" class="btn">Nueva Mascota</a>
-      {% endif %}
-    </form>
-    <div class="cards-grid">
-      {% for m in page_obj.object_list %}
-      <div class="card">
-        <h3 class="card-title">{{ m.nombre }}</h3>
-        <p class="card-description">{{ m.especie }}{% if m.raza %} - {{ m.raza }}{% endif %}</p>
+    <div class="header-actions">
+      <div>
+        <h2 class="section-title" style="display:flex; align-items:center; gap:0.5rem;">{% lucide "dog" %} Mascotas</h2>
+        <p class="section-subtitle">Listado completo de mascotas registradas</p>
       </div>
-      {% empty %}
-      <p>No hay mascotas registradas.</p>
-      {% endfor %}
+      {% if request.user.is_superuser or rol_nombre == 'Administrador general' or rol_nombre == 'Recepcionista' or rol_nombre == 'Veterinario clínico' %}
+        <a href="/mascotas/nueva/" class="btn">{% lucide "plus" %} Nueva Mascota</a>
+      {% endif %}
+    </div>
+
+    <form method="get" class="filter-card" style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:center;">
+      <div style="flex:1 1 280px;">
+        <input type="text" name="q" value="{{ q }}" class="form-input" placeholder="Buscar por nombre o raza..." />
+      </div>
+      <div style="flex:1 1 220px;">
+        <select name="especie" class="form-select">
+          <option value="">Todas las especies</option>
+          {% for e in especies %}
+            <option value="{{ e }}" {% if especie == e %}selected{% endif %}>{{ e }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="flex:1 1 220px;">
+        <select name="order" class="form-select">
+          <option value="nombre" {% if order == 'nombre' %}selected{% endif %}>Nombre (A-Z)</option>
+          <option value="especie" {% if order == 'especie' %}selected{% endif %}>Especie</option>
+        </select>
+      </div>
+      <button class="btn" type="submit">Aplicar</button>
+    </form>
+
+    <div class="card">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Especie</th>
+            <th>Raza</th>
+            <th>Edad</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in page_obj.object_list %}
+          <tr>
+            <td>{{ m.nombre }}</td>
+            <td>{{ m.especie }}</td>
+            <td>{% if m.raza %}{{ m.raza }}{% else %}-{% endif %}</td>
+            <td>{% if m.edad %}{{ m.edad }} años{% else %}-{% endif %}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" style="text-align:center; color: rgba(1,56,71,0.7);">No se encontraron mascotas</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
 
     <div style="margin-top:1rem; display:flex; gap:0.5rem; align-items:center;">
       {% if page_obj.has_previous %}
-        <a class="btn" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&order={{ order }}">Anterior</a>
+        <a class="btn" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&especie={{ especie }}&order={{ order }}">Anterior</a>
       {% endif %}
       <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
       {% if page_obj.has_next %}
-        <a class="btn" href="?page={{ page_obj.next_page_number }}&q={{ q }}&order={{ order }}">Siguiente</a>
+        <a class="btn" href="?page={{ page_obj.next_page_number }}&q={{ q }}&especie={{ especie }}&order={{ order }}">Siguiente</a>
       {% endif %}
     </div>
   </div>

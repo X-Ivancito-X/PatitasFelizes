@@ -46,15 +46,17 @@ def registro(request):
             nombre = form.cleaned_data['nombre']
             apellido = form.cleaned_data['apellido']
             email = form.cleaned_data['email']
+            username = form.cleaned_data.get('usuario') or email
             telefono = form.cleaned_data.get('telefono')
+            direccion = form.cleaned_data.get('direccion')
             password = form.cleaned_data['password']
             user = Usuario.objects.filter(email=email).first()
             if user:
                 messages.error(request, 'El email ya está registrado en el sistema')
             else:
-                auth_user = User.objects.create_user(username=email, email=email, password=password, first_name=nombre, last_name=apellido)
+                auth_user = User.objects.create_user(username=username, email=email, password=password, first_name=nombre, last_name=apellido)
                 rol_cliente, _ = Rol.objects.get_or_create(nombre_rol='Cliente')
-                usuario = Usuario.objects.create(nombre=nombre, apellido=apellido, email=email, contrasena='(hash-autenticación-django)', telefono=telefono, rol=rol_cliente, user=auth_user)
+                usuario = Usuario.objects.create(nombre=nombre, apellido=apellido, email=email, contrasena='(hash-autenticación-django)', telefono=telefono, direccion=direccion, rol=rol_cliente, user=auth_user)
                 login(request, auth_user)
                 messages.success(request, 'Registro exitoso')
                 return redirect('Index')
@@ -64,9 +66,15 @@ def registro(request):
 
 def ingresar(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
+        identifier = request.POST.get('email')
         password = request.POST.get('password')
-        user = authenticate(request, username=email, password=password)
+        user = authenticate(request, username=identifier, password=password)
+        if not user and '@' in (identifier or ''):
+            try:
+                found = User.objects.get(email=identifier)
+                user = authenticate(request, username=found.username, password=password)
+            except User.DoesNotExist:
+                user = None
         if user:
             login(request, user)
             return redirect('Index')
@@ -98,16 +106,29 @@ def perfil(request):
 @requires_roles('Administrador general', 'Recepcionista', 'Veterinario clínico', 'Veterinario especialista')
 def mascotas_list(request):
     q = request.GET.get('q', '').strip()
+    especie = request.GET.get('especie', '').strip()
     order = request.GET.get('order', 'nombre')
-    mascotas = Mascota.objects.all()
+    mascotas_qs = Mascota.objects.all()
     if q:
-        mascotas = mascotas.filter(nombre__icontains=q)
+        mascotas_qs = mascotas_qs.filter(models.Q(nombre__icontains=q) | models.Q(raza__icontains=q))
+    if especie:
+        mascotas_qs = mascotas_qs.filter(especie__iexact=especie)
     if order:
-        mascotas = mascotas.order_by(order)
-    paginator = Paginator(mascotas, 10)
+        mascotas_qs = mascotas_qs.order_by(order)
+    paginator = Paginator(mascotas_qs, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'Page/Mascotas/list.html', {'page_obj': page_obj, 'q': q, 'order': order})
+    especies = list(Mascota.objects.values_list('especie', flat=True).distinct())
+    usuario = getattr(request.user, 'usuario_profile', None)
+    rol_nombre = usuario.rol.nombre_rol if usuario and usuario.rol else ''
+    return render(request, 'Page/Mascotas/list.html', {
+        'page_obj': page_obj,
+        'q': q,
+        'order': order,
+        'especie': especie,
+        'especies': especies,
+        'rol_nombre': rol_nombre,
+    })
 
 @login_required
 @requires_roles('Administrador general', 'Recepcionista', 'Veterinario clínico')
@@ -191,6 +212,14 @@ def administracion(request):
     reservados = Turno.objects.filter(estado='RESERVADO').count()
     disponibles = Turno.objects.filter(estado='DISPONIBLE').count()
     proximos = Turno.objects.order_by('fecha', 'hora')[:5]
+    from django.utils import timezone
+    from datetime import timedelta
+    hoy = timezone.localdate()
+    por_vencer = Turno.objects.filter(estado='RESERVADO', fecha__gte=hoy, fecha__lte=hoy + timedelta(days=2)).count()
+    try:
+        internaciones_curso = Internacion.objects.filter(estado='EN_CURSO', fecha_alta__isnull=True).count()
+    except Exception:
+        internaciones_curso = 0
     usuario = getattr(request.user, 'usuario_profile', None)
     rol_nombre = usuario.rol.nombre_rol if usuario and usuario.rol else ''
     return render(request, 'Page/Administracion.html', {
@@ -199,6 +228,7 @@ def administracion(request):
         'reservados': reservados,
         'disponibles': disponibles,
         'proximos': proximos,
+        'por_vencer': por_vencer,
+        'internaciones_curso': internaciones_curso,
         'rol_nombre': rol_nombre,
     })
-

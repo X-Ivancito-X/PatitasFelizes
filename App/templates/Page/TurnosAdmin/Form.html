@@ -1,15 +1,41 @@
 {% extends 'Base.html' %}
-{% block title %}Turno{% endblock %}
+{% load lucide %}
+{% block title %}Nuevo Turno{% endblock %}
 {% block content %}
 <section class="section">
-  <div class="container" style="max-width:600px;">
-    <h2 class="section-title">Turno</h2>
+  <div class="container" style="max-width:900px;">
+    <h2 class="section-title" style="display:flex; align-items:center; gap:0.5rem;">{% lucide "calendar-days" %} Nuevo Turno</h2>
+    <p class="section-subtitle">Crear un nuevo turno en el sistema</p>
     <form method="post" class="card" style="padding:1.5rem;">
       {% csrf_token %}
-      {{ form.as_p }}
-      {% if request.user.is_superuser or request.user.usuario_profile.rol.nombre_rol == 'Administrador general' or request.user.usuario_profile.rol.nombre_rol == 'Recepcionista' %}
-        <button class="btn btn-lg" type="submit">Guardar</button>
-      {% endif %}
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Mascota *</label>
+          {{ form.mascota }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Veterinario *</label>
+          {{ form.veterinario }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha *</label>
+          {{ form.fecha }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hora *</label>
+          {{ form.hora }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado *</label>
+          {{ form.estado }}
+        </div>
+      </div>
+      <div style="display:flex; gap:0.5rem;">
+        {% if request.user.is_superuser or request.user.usuario_profile.rol.nombre_rol == 'Administrador general' or request.user.usuario_profile.rol.nombre_rol == 'Recepcionista' %}
+          <button class="btn btn-lg" type="submit">Guardar Turno</button>
+        {% endif %}
+        <a class="btn btn-lg" href="/panel/turnos/">Cancelar</a>
+      </div>
     </form>
   </div>
 {% endblock %}

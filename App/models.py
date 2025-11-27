@@ -28,6 +28,7 @@ class Usuario(models.Model):
     # pero para replicar tu tabla, se usa CharField, asumiendo que el hashing se hace antes de guardar.
     contrasena = models.CharField(max_length=255, validators=[MinLengthValidator(8)], verbose_name="Contraseña (Hash)")
     telefono = models.CharField(max_length=20, blank=True, null=True, verbose_name="Teléfono de Contacto")
+    direccion = models.CharField(max_length=200, blank=True, null=True, verbose_name="Dirección")
     # Relación con Roles (id_rol INT FK)
     rol = models.ForeignKey(Rol, on_delete=models.PROTECT, verbose_name="Rol del Usuario")
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='usuario_profile', null=True, blank=True, verbose_name="Usuario de Autenticación")
@@ -58,6 +59,16 @@ class Mascota(models.Model):
 
     def __str__(self):
         return f"{self.nombre} ({self.especie})"
+
+    def edad(self):
+        from datetime import date
+        if not self.fecha_nacimiento:
+            return None
+        hoy = date.today()
+        years = hoy.year - self.fecha_nacimiento.year - (
+            (hoy.month, hoy.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day)
+        )
+        return years
 
 # Modelo Veterinaria (información adicional para usuarios con rol Veterinario)
 class Veterinario(models.Model):
@@ -122,3 +133,24 @@ class HistorialClinico(models.Model):
 
     def __str__(self):
         return f"Registro #{self.id_historial} de {self.mascota.nombre} ({self.fecha.strftime('%Y-%m-%d')})"
+
+# Modelo Internación
+ESTADO_INTERNACION_CHOICES = [
+    ('EN_CURSO', 'En curso'),
+    ('ALTA', 'Alta médica'),
+]
+
+class Internacion(models.Model):
+    id_internacion = models.AutoField(primary_key=True)
+    mascota = models.ForeignKey(Mascota, on_delete=models.CASCADE, related_name='internaciones', verbose_name="Mascota")
+    fecha_ingreso = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Ingreso")
+    fecha_alta = models.DateTimeField(blank=True, null=True, verbose_name="Fecha de Alta")
+    estado = models.CharField(max_length=20, choices=ESTADO_INTERNACION_CHOICES, default='EN_CURSO', verbose_name="Estado")
+
+    class Meta:
+        verbose_name = "Internación"
+        verbose_name_plural = "Internaciones"
+        ordering = ['-fecha_ingreso']
+
+    def __str__(self):
+        return f"Internación #{self.id_internacion} de {self.mascota.nombre} ({self.get_estado_display()})"

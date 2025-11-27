@@ -25,8 +25,9 @@ SECRET_KEY = 'django-insecure-5390-5(9y_v2gp)ti@zfy%y_0_5vd9_pik$5r__kb%9d%a4k13
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0']
 
+# bien, ahora hay que ocultar el panel para los que son clientes y poner un sector de compras en vez del boton (Panel) para los clientes
 
 # Application definition
 
@@ -119,7 +120,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'App' / 'static',
@@ -134,7 +135,13 @@ REST_FRAMEWORK = {
 }
 
 # Opcional para desarrollos: confianza de origen
-CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000']
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+    'http://0.0.0.0:8000',
+]
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

@@ -1,4 +1,5 @@
 {% extends 'Base.html' %}
+{% load lucide %}
 {% block title %}Administración{% endblock %}
 {% block content %}
 <section class="section">
@@ -6,15 +7,45 @@
     <h2 class="section-title">Panel de Administración</h2>
     <div class="cards-grid" style="margin-bottom:1rem;">
       <div class="card">
-        <h3 class="card-title">Estadísticas</h3>
-        <p class="card-description">Turnos: {{ total_turnos }} · Disponibles: {{ disponibles }} · Reservados: {{ reservados }} · Cancelados: {{ cancelados }}</p>
-        <div>
-          <h4 class="section-subtitle">Próximos turnos</h4>
-          <ul>
-            {% for t in proximos %}
-              <li>{{ t.fecha }} {{ t.hora }} - {{ t.mascota.nombre }}</li>
-            {% endfor %}
-          </ul>
+        <h3 class="card-title">Total Turnos</h3>
+        <div style="font-size:2rem; font-weight:bold;">{{ total_turnos }}</div>
+      </div>
+      <div class="card">
+        <h3 class="card-title">Pendientes</h3>
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <div style="font-size:2rem; font-weight:bold;">{{ reservados }}</div>
+          <span class="badge">{{ reservados }}</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="card-title">Por Vencer (48h)</h3>
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <div style="font-size:2rem; font-weight:bold;">{{ por_vencer }}</div>
+          <span class="badge">{{ por_vencer }}</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="card-title">Cancelados</h3>
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <div style="font-size:2rem; font-weight:bold;">{{ cancelados }}</div>
+          <span class="badge">{{ cancelados }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="background:#fff7e9; margin-bottom:1rem;">
+      <h3 class="card-title">Alertas Importantes</h3>
+      <div class="alert-list">
+        <div class="alert-item">
+          <span>{% lucide "alarm-clock" %} Turnos por vencer en 48h</span>
+          <span class="badge">{{ por_vencer }}</span>
+        </div>
+        <div class="alert-item">
+          <span>{% lucide "ban" %} Turnos cancelados</span>
+          <span class="badge">{{ cancelados }}</span>
+        </div>
+        <div class="alert-item">
+          <span>{% lucide "hospital" %} Internaciones en curso</span>
+          <span class="badge">{{ internaciones_curso }}</span>
         </div>
       </div>
     </div>
