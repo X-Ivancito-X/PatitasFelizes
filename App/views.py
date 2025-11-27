@@ -222,6 +222,31 @@ def administracion(request):
         internaciones_curso = 0
     usuario = getattr(request.user, 'usuario_profile', None)
     rol_nombre = usuario.rol.nombre_rol if usuario and usuario.rol else ''
+    # Acciones por rol
+    actions_admin = [
+        {'label': 'Ver Mascotas', 'icon': 'paw-print', 'url': '/mascotas/'},
+        {'label': 'Nueva Mascota', 'icon': 'plus', 'url': '/mascotas/nueva/'},
+        {'label': 'Panel de Turnos', 'icon': 'calendar', 'url': '/panel/turnos/'},
+        {'label': 'Nuevo Turno', 'icon': 'plus', 'url': '/panel/turnos/nuevo/'},
+        {'label': 'API Mascotas', 'icon': 'file-text', 'url': '/api/mascotas/'},
+        {'label': 'API Turnos', 'icon': 'file-text', 'url': '/api/turnos/'},
+        {'label': 'Resetear Contraseña', 'icon': 'user-round', 'url': '/password/reset/'},
+    ]
+    actions_recepcionista = [
+        {'label': 'Panel de Turnos', 'icon': 'calendar', 'url': '/panel/turnos/'},
+        {'label': 'Nuevo Turno', 'icon': 'plus', 'url': '/panel/turnos/nuevo/'},
+        {'label': 'Ver Mascotas', 'icon': 'paw-print', 'url': '/mascotas/'},
+        {'label': 'Nueva Mascota', 'icon': 'plus', 'url': '/mascotas/nueva/'},
+        {'label': 'Resetear Contraseña', 'icon': 'user-round', 'url': '/password/reset/'},
+    ]
+    actions_vet_clinico = [
+        {'label': 'Ver Mascotas', 'icon': 'paw-print', 'url': '/mascotas/'},
+        {'label': 'Resetear Contraseña', 'icon': 'user-round', 'url': '/password/reset/'},
+    ]
+    actions_vet_especialista = [
+        {'label': 'Ver Mascotas', 'icon': 'paw-print', 'url': '/mascotas/'},
+        {'label': 'Resetear Contraseña', 'icon': 'user-round', 'url': '/password/reset/'},
+    ]
     return render(request, 'Page/Administracion.html', {
         'total_turnos': total_turnos,
         'cancelados': cancelados,
@@ -231,4 +256,213 @@ def administracion(request):
         'por_vencer': por_vencer,
         'internaciones_curso': internaciones_curso,
         'rol_nombre': rol_nombre,
+        'actions_admin': actions_admin,
+        'actions_recepcionista': actions_recepcionista,
+        'actions_vet_clinico': actions_vet_clinico,
+        'actions_vet_especialista': actions_vet_especialista,
     })
+@login_required
+@requires_roles('Administrador general', 'Asistente veterinario')
+def rol_asistente_veterinario(request):
+    ctx = {
+        'title': 'Asistente veterinario',
+        'subtitle': 'Ayuda en consultas y procedimientos. Apoyo en registro de signos y medicación. Visualización de agenda del equipo.',
+        'actions': [
+            {'label': 'Visualizar Agenda', 'icon': 'calendar-days', 'url': '/panel/turnos/'},
+            {'label': 'Ver Mascotas', 'icon': 'paw-print', 'url': '/mascotas/'},
+        ],
+    }
+    return render(request, 'Page/Roles/sector.html', ctx)
+
+@login_required
+@requires_roles('Administrador general', 'Encargado de quirófano')
+def rol_quirofano(request):
+    ctx = {
+        'title': 'Encargado de quirófano',
+        'subtitle': 'Coordina cirugías, materiales y horarios del quirófano. Gestión de inventario quirúrgico. Calendario de cirugías.',
+        'actions': [
+            {'label': 'Calendario de cirugías', 'icon': 'calendar', 'url': '/administracion'},
+            {'label': 'Inventario quirúrgico', 'icon': 'clipboard-list', 'url': '#'},
+        ],
+    }
+    return render(request, 'Page/Roles/sector.html', ctx)
+
+@login_required
+@requires_roles('Administrador general', 'Técnico en laboratorio')
+def rol_laboratorio(request):
+    ctx = {
+        'title': 'Técnico en laboratorio',
+        'subtitle': 'Realiza análisis clínicos y carga resultados. Registro de resultados de laboratorio. Acceso a estudios del paciente.',
+        'actions': [
+            {'label': 'Resultados de laboratorio', 'icon': 'flask-conical', 'url': '#'},
+            {'label': 'Estudios del paciente', 'icon': 'file-text', 'url': '#'},
+        ],
+    }
+    return render(request, 'Page/Roles/sector.html', ctx)
+
+@login_required
+@requires_roles('Administrador general', 'Encargado de farmacia')
+def rol_farmacia(request):
+    ctx = {
+        'title': 'Encargado de farmacia',
+        'subtitle': 'Gestiona medicamentos, stock y recetas. Control de stock y vencimientos. Registro de entrega de recetas.',
+        'actions': [
+            {'label': 'Stock y vencimientos', 'icon': 'package', 'url': '#'},
+            {'label': 'Entrega de recetas', 'icon': 'clipboard-check', 'url': '#'},
+        ],
+    }
+    return render(request, 'Page/Roles/sector.html', ctx)
+
+@login_required
+@requires_roles('Administrador general', 'Peluquero canino/felino')
+def rol_peluqueria(request):
+    ctx = {
+        'title': 'Peluquero canino/felino',
+        'subtitle': 'Recibe turnos estéticos. Agenda de servicios estéticos. Registro de servicios realizados.',
+        'actions': [
+            {'label': 'Agenda estética', 'icon': 'calendar', 'url': '/panel/turnos/'},
+            {'label': 'Servicios realizados', 'icon': 'scissors', 'url': '#'},
+        ],
+    }
+    return render(request, 'Page/Roles/sector.html', ctx)
+
+@login_required
+@requires_roles('Administrador general', 'Encargado de internación')
+def rol_internacion(request):
+    ctx = {
+        'title': 'Encargado de internación',
+        'subtitle': 'Controla internaciones y medicación. Plan de medicación por paciente. Alertas de horarios de medicación.',
+        'actions': [
+            {'label': 'Internaciones en curso', 'icon': 'hospital', 'url': '/administracion'},
+            {'label': 'Plan de medicación', 'icon': 'pill', 'url': '#'},
+        ],
+    }
+    return render(request, 'Page/Roles/sector.html', ctx)
+
+@login_required
+@requires_roles('Administrador general', 'Cuidador temporal / guardería')
+def rol_guarderia(request):
+    ctx = {
+        'title': 'Cuidador temporal / guardería',
+        'subtitle': 'Gestión de hospedaje y paseos. Agenda de guardería. Registro de actividades.',
+        'actions': [
+            {'label': 'Agenda de guardería', 'icon': 'calendar', 'url': '#'},
+            {'label': 'Registro de actividades', 'icon': 'list-todo', 'url': '#'},
+        ],
+    }
+    return render(request, 'Page/Roles/sector.html', ctx)
+
+@login_required
+@requires_roles('Administrador general', 'Personal de limpieza')
+def rol_limpieza(request):
+    ctx = {
+        'title': 'Personal de limpieza',
+        'subtitle': 'Mantenimiento y desinfección. Plan de limpieza y checklist.',
+        'actions': [
+            {'label': 'Plan de limpieza', 'icon': 'check-square', 'url': '#'},
+        ],
+    }
+    return render(request, 'Page/Roles/sector.html', ctx)
+
+@login_required
+@requires_roles('Administrador general', 'Encargado de stock / depósito')
+def rol_stock(request):
+    ctx = {
+        'title': 'Encargado de stock / depósito',
+        'subtitle': 'Controla insumos y productos. Inventario y reposición. Alertas por stock bajo.',
+        'actions': [
+            {'label': 'Inventario', 'icon': 'boxes', 'url': '#'},
+            {'label': 'Alertas de stock', 'icon': 'alert-triangle', 'url': '#'},
+        ],
+    }
+    return render(request, 'Page/Roles/sector.html', ctx)
+
+@login_required
+@requires_roles('Administrador general', 'Community manager / marketing')
+def rol_marketing(request):
+    ctx = {
+        'title': 'Community manager / marketing',
+        'subtitle': 'Promociones y comunicación. Campañas y publicaciones. Métricas de alcance.',
+        'actions': [
+            {'label': 'Campañas', 'icon': 'megaphone', 'url': '#'},
+            {'label': 'Métricas', 'icon': 'chart-bar', 'url': '#'},
+        ],
+    }
+    return render(request, 'Page/Roles/sector.html', ctx)
+
+@login_required
+@requires_roles('Administrador general', 'Cajero')
+def rol_cajero(request):
+    ctx = {
+        'title': 'Cajero',
+        'subtitle': 'Cobros y facturación en caja. Registro de cobros. Emisión de comprobantes.',
+        'actions': [
+            {'label': 'Registrar cobro', 'icon': 'credit-card', 'url': '#'},
+            {'label': 'Comprobantes', 'icon': 'file-text', 'url': '#'},
+        ],
+    }
+    return render(request, 'Page/Roles/sector.html', ctx)
+
+@login_required
+@requires_roles('Administrador general', 'Contador')
+def rol_contador(request):
+    ctx = {
+        'title': 'Contador',
+        'subtitle': 'Balances, ingresos, gastos y reportes. Reportes contables. Resumen de caja.',
+        'actions': [
+            {'label': 'Reportes contables', 'icon': 'file-chart-pie', 'url': '#'},
+            {'label': 'Resumen de caja', 'icon': 'wallet', 'url': '#'},
+        ],
+    }
+    return render(request, 'Page/Roles/sector.html', ctx)
+
+@login_required
+@requires_roles('Administrador general', 'Dueño / socio')
+def rol_duenio(request):
+    ctx = {
+        'title': 'Dueño / socio',
+        'subtitle': 'Reportes generales y administración avanzada. Acceso a métricas y paneles. Configuraciones clave.',
+        'actions': [
+            {'label': 'Panel general', 'icon': 'layout-dashboard', 'url': '/administracion'},
+        ],
+    }
+    return render(request, 'Page/Roles/sector.html', ctx)
+
+@login_required
+@requires_roles('Administrador general', 'Cliente')
+def rol_cliente(request):
+    ctx = {
+        'title': 'Cliente registrado',
+        'subtitle': 'Solicita turnos y revisa historial de su mascota. Reserva de turnos. Consulta de historial.',
+        'actions': [
+            {'label': 'Reservar turno', 'icon': 'calendar-plus', 'url': '/turnos/'},
+            {'label': 'Ver mascotas', 'icon': 'paw-print', 'url': '/mascotas/'},
+        ],
+    }
+    return render(request, 'Page/Roles/sector.html', ctx)
+
+@login_required
+@requires_roles('Administrador general', 'Proveedor')
+def rol_proveedor(request):
+    ctx = {
+        'title': 'Proveedor',
+        'subtitle': 'Gestiona entregas y facturas. Registro de entregas. Consulta de facturas.',
+        'actions': [
+            {'label': 'Entregas', 'icon': 'truck', 'url': '#'},
+            {'label': 'Facturas', 'icon': 'receipt', 'url': '#'},
+        ],
+    }
+    return render(request, 'Page/Roles/sector.html', ctx)
+
+@login_required
+@requires_roles('Administrador general', 'Soporte técnico del sistema')
+def rol_soporte(request):
+    ctx = {
+        'title': 'Soporte técnico del sistema',
+        'subtitle': 'Mantenimiento y actualización de plataforma. Acceso técnico. Revisión de logs y estado.',
+        'actions': [
+            {'label': 'Panel del sistema', 'icon': 'cpu', 'url': '/administracion'},
+            {'label': 'Logs y estado', 'icon': 'file-text', 'url': '#'},
+        ],
+    }
+    return render(request, 'Page/Roles/sector.html', ctx)

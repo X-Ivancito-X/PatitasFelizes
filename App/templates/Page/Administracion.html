@@ -81,6 +81,17 @@
             <li>Accede a todos los paneles y reportes</li>
             <li>Configura parámetros del sistema</li>
           </ul>
+          {% if request.user.is_superuser or rol_nombre == 'Administrador general' %}
+          <div class="quick-links-grid" style="margin-top:0.5rem;">
+            <a href="/mascotas/" class="quick-link"><span class="quick-link-icon">{% lucide "paw-print" %}</span> Ver Mascotas</a>
+            <a href="/mascotas/nueva/" class="quick-link"><span class="quick-link-icon">{% lucide "plus" %}</span> Nueva Mascota</a>
+            <a href="/panel/turnos/" class="quick-link"><span class="quick-link-icon">{% lucide "calendar" %}</span> Panel de Turnos</a>
+            <a href="/panel/turnos/nuevo/" class="quick-link"><span class="quick-link-icon">{% lucide "plus" %}</span> Nuevo Turno</a>
+            <a href="/api/mascotas/" class="quick-link"><span class="quick-link-icon">{% lucide "file-text" %}</span> API Mascotas</a>
+            <a href="/api/turnos/" class="quick-link"><span class="quick-link-icon">{% lucide "file-text" %}</span> API Turnos</a>
+            <a href="/password/reset/" class="quick-link"><span class="quick-link-icon">{% lucide "user-round" %}</span> Resetear Contraseña</a>
+          </div>
+          {% endif %}
         </div>
       </div>
       <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
@@ -92,6 +103,14 @@
             <li>Filtro y búsqueda de agenda</li>
             <li>Registro inicial de pacientes</li>
           </ul>
+          {% if request.user.is_superuser or rol_nombre == 'Administrador general' or rol_nombre == 'Recepcionista' %}
+          <div class="quick-links-grid" style="margin-top:0.5rem;">
+            <a href="/panel/turnos/" class="quick-link"><span class="quick-link-icon">{% lucide "calendar" %}</span> Panel de Turnos</a>
+            <a href="/panel/turnos/nuevo/" class="quick-link"><span class="quick-link-icon">{% lucide "plus" %}</span> Nuevo Turno</a>
+            <a href="/mascotas/" class="quick-link"><span class="quick-link-icon">{% lucide "paw-print" %}</span> Ver Mascotas</a>
+            <a href="/mascotas/nueva/" class="quick-link"><span class="quick-link-icon">{% lucide "plus" %}</span> Nueva Mascota</a>
+          </div>
+          {% endif %}
         </div>
       </div>
       <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
@@ -103,6 +122,11 @@
             <li>Registro de diagnósticos y tratamientos</li>
             <li>Gestión de turnos propios</li>
           </ul>
+          {% if request.user.is_superuser or rol_nombre == 'Administrador general' or rol_nombre == 'Veterinario clínico' %}
+          <div class="quick-links-grid" style="margin-top:0.5rem;">
+            <a href="/mascotas/" class="quick-link"><span class="quick-link-icon">{% lucide "paw-print" %}</span> Ver Mascotas</a>
+          </div>
+          {% endif %}
         </div>
       </div>
       <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
@@ -114,6 +138,11 @@
             <li>Registro de procedimientos y resultados</li>
             <li>Acceso a recursos de quirófano si aplica</li>
           </ul>
+          {% if request.user.is_superuser or rol_nombre == 'Administrador general' or rol_nombre == 'Veterinario especialista' %}
+          <div class="quick-links-grid" style="margin-top:0.5rem;">
+            <a href="/mascotas/" class="quick-link"><span class="quick-link-icon">{% lucide "paw-print" %}</span> Ver Mascotas</a>
+          </div>
+          {% endif %}
         </div>
       </div>
       <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">

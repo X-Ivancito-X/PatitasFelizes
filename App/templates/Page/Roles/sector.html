@@ -1,0 +1,22 @@
+{% extends 'Base.html' %}
+{% load lucide %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h2 class="section-title" style="display:flex; align-items:center; gap:0.5rem;">{% lucide "badge-check" %} {{ title }}</h2>
+    <p class="section-subtitle">{{ subtitle }}</p>
+
+    <div class="quick-links-card">
+      <h3 class="card-title">Acciones</h3>
+      <div class="quick-links-grid">
+        {% for a in actions %}
+          <a href="{{ a.url }}" class="quick-link"><span class="quick-link-icon">{% lucide a.icon %}</span> {{ a.label }}</a>
+        {% empty %}
+          <p class="card-description">No hay acciones disponibles.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
