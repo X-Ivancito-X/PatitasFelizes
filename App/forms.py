@@ -51,4 +51,22 @@ class TurnoForm(forms.ModelForm):
             'mascota': forms.Select(attrs={'class': 'form-select'}),
             'veterinario': forms.Select(attrs={'class': 'form-select'}),
         }
-        
+
+class VeterinarioForm(forms.ModelForm):
+    class Meta:
+        model = Veterinario
+        fields = ['usuario', 'especialidad']
+        widgets = {
+            'usuario': forms.Select(attrs={'class': 'form-select'}),
+            'especialidad': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Ej: Cirugía, Clínica General'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        try:
+            rol_vet = Rol.objects.get(nombre_rol='Veterinario clínico')
+            rol_vet_esp = Rol.objects.filter(nombre_rol='Veterinario especialista').first()
+            qs = Usuario.objects.filter(models.Q(rol=rol_vet) | models.Q(rol=rol_vet_esp))
+            self.fields['usuario'].queryset = qs
+        except Rol.DoesNotExist:
+            self.fields['usuario'].queryset = Usuario.objects.all()

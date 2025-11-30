@@ -91,6 +91,9 @@
             <a href="/api/turnos/" class="quick-link"><span class="quick-link-icon">{% lucide "file-text" %}</span> API Turnos</a>
             <a href="/password/reset/" class="quick-link"><span class="quick-link-icon">{% lucide "user-round" %}</span> Resetear Contraseña</a>
           </div>
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/duenio/" class="btn">Ir al sector</a>
+          </div>
           {% endif %}
         </div>
       </div>
@@ -110,6 +113,9 @@
             <a href="/mascotas/" class="quick-link"><span class="quick-link-icon">{% lucide "paw-print" %}</span> Ver Mascotas</a>
             <a href="/mascotas/nueva/" class="quick-link"><span class="quick-link-icon">{% lucide "plus" %}</span> Nueva Mascota</a>
           </div>
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/asistente/" class="btn">Ir al sector</a>
+          </div>
           {% endif %}
         </div>
       </div>
@@ -126,6 +132,9 @@
           <div class="quick-links-grid" style="margin-top:0.5rem;">
             <a href="/mascotas/" class="quick-link"><span class="quick-link-icon">{% lucide "paw-print" %}</span> Ver Mascotas</a>
           </div>
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/laboratorio/" class="btn">Ir al sector</a>
+          </div>
           {% endif %}
         </div>
       </div>
@@ -141,6 +150,9 @@
           {% if request.user.is_superuser or rol_nombre == 'Administrador general' or rol_nombre == 'Veterinario especialista' %}
           <div class="quick-links-grid" style="margin-top:0.5rem;">
             <a href="/mascotas/" class="quick-link"><span class="quick-link-icon">{% lucide "paw-print" %}</span> Ver Mascotas</a>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/quirofano/" class="btn">Ir al sector</a>
           </div>
           {% endif %}
         </div>
@@ -254,7 +266,7 @@
           </ul>
         </div>
       </div>
-      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+      <div class="card masonry-item" style="cursor:pointer;" onclick="toggleDetails(this)">
         <h3 class="card-title">Contador</h3>
         <p class="card-description">Balances, ingresos, gastos y reportes.</p>
         <div class="role-details" style="display:none;">
@@ -264,7 +276,7 @@
           </ul>
         </div>
       </div>
-      <div class="card" style="cursor:pointer;" onclick="toggleDetails(this)">
+      <div class="card masonry-item" style="cursor:pointer;" onclick="toggleDetails(this)">
         <h3 class="card-title">Dueño / socio</h3>
         <p class="card-description">Reportes generales y administración avanzada.</p>
         <div class="role-details" style="display:none;">
@@ -308,8 +320,57 @@
     <script>
       function toggleDetails(card){
         var details = card.querySelector('.role-details');
-        if(details){ details.style.display = details.style.display==='none' ? 'block' : 'none'; }
+        if(!details) return;
+        var isOpen = details.style.display === 'block';
+        var all = document.querySelectorAll('.role-details');
+        all.forEach(function(d){ d.style.display = 'none'; });
+        details.style.display = isOpen ? 'none' : 'block';
       }
     </script>
   </div>
 {% endblock %}
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/quirofano/" class="btn">Ir al sector</a>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/laboratorio/" class="btn">Ir al sector</a>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/farmacia/" class="btn">Ir al sector</a>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/peluqueria/" class="btn">Ir al sector</a>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/internacion/" class="btn">Ir al sector</a>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/guarderia/" class="btn">Ir al sector</a>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/limpieza/" class="btn">Ir al sector</a>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/stock/" class="btn">Ir al sector</a>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/marketing/" class="btn">Ir al sector</a>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/cajero/" class="btn">Ir al sector</a>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/contador/" class="btn">Ir al sector</a>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/duenio/" class="btn">Ir al sector</a>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/cliente/" class="btn">Ir al sector</a>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/proveedor/" class="btn">Ir al sector</a>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <a href="/roles/soporte/" class="btn">Ir al sector</a>
+          </div>

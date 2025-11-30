@@ -7,6 +7,15 @@ from django.core.paginator import Paginator
 from .forms import *
 from .models import *
 from .utils.permissions import requires_roles
+from django.core import signing
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.core.mail import send_mail
+from django.contrib.auth.forms import PasswordResetForm
+import json
+from rest_framework import viewsets
+from .api import *
 
 def Index(request):
     return render(request, 'Index.html')
@@ -55,11 +64,22 @@ def registro(request):
                 messages.error(request, 'El email ya está registrado en el sistema')
             else:
                 auth_user = User.objects.create_user(username=username, email=email, password=password, first_name=nombre, last_name=apellido)
+                auth_user.is_active = False
+                auth_user.save()
                 rol_cliente, _ = Rol.objects.get_or_create(nombre_rol='Cliente')
                 usuario = Usuario.objects.create(nombre=nombre, apellido=apellido, email=email, contrasena='(hash-autenticación-django)', telefono=telefono, direccion=direccion, rol=rol_cliente, user=auth_user)
-                login(request, auth_user)
-                messages.success(request, 'Registro exitoso')
-                return redirect('Index')
+                # Enviar email de confirmación con token y vencimiento
+                token = signing.dumps({'uid': auth_user.pk, 'email': email}, salt='email-confirm')
+                confirm_url = request.build_absolute_uri(f"/auth/confirm-email/{token}/")
+                send_mail(
+                    'Confirma tu cuenta en PatitasFelices',
+                    f"Hola {nombre},\n\nPara activar tu cuenta, confirma tu email haciendo clic en este enlace:\n{confirm_url}\n\nEste enlace vence en {int(settings.EMAIL_CONFIRMATION_TIMEOUT/3600)} hora(s).",
+                    None,
+                    [email],
+                    fail_silently=False,
+                )
+                messages.success(request, 'Registro exitoso. Te enviamos un email para confirmar tu cuenta.')
+                return redirect('login')
     else:
         form = RegistroForm()
     return render(request, 'Page/Auth/registro.html', {'form': form})
@@ -76,6 +96,9 @@ def ingresar(request):
             except User.DoesNotExist:
                 user = None
         if user:
+            if not user.is_active:
+                messages.error(request, 'Tu cuenta aún no está activada. Revisa tu email para confirmar el registro.')
+                return render(request, 'Page/Auth/login.html')
             login(request, user)
             return redirect('Index')
         messages.error(request, 'Credenciales inválidas')
@@ -99,8 +122,15 @@ def perfil(request):
             usuario.telefono = telefono
             usuario.save()
         messages.success(request, 'Perfil actualizado')
-        return redirect('Index')
-    return redirect('Index')
+        return redirect('perfil')
+    rol_nombre = usuario.rol.nombre_rol if usuario and usuario.rol else 'Sin rol asignado'
+    return render(request, 'Page/Auth/perfil.html', {
+        'email': request.user.email,
+        'first_name': request.user.first_name,
+        'last_name': request.user.last_name,
+        'telefono': getattr(usuario, 'telefono', ''),
+        'rol_nombre': rol_nombre,
+    })
 
 @login_required
 @requires_roles('Administrador general', 'Recepcionista', 'Veterinario clínico', 'Veterinario especialista')
@@ -205,6 +235,55 @@ def turno_delete(request, pk):
     return redirect('turnos_admin_list')
 
 @login_required
+@requires_roles('Administrador general')
+def veterinarios_admin_list(request):
+    q = request.GET.get('q', '').strip()
+    order = request.GET.get('order', 'usuario__apellido')
+    vets = Veterinario.objects.select_related('usuario')
+    if q:
+        vets = vets.filter(models.Q(usuario__nombre__icontains=q) | models.Q(usuario__apellido__icontains=q) | models.Q(especialidad__icontains=q))
+    if order:
+        vets = vets.order_by(order)
+    paginator = Paginator(vets, 10)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    return render(request, 'Page/VeterinariosAdmin/List.html', {'page_obj': page_obj, 'q': q, 'order': order})
+
+@login_required
+@requires_roles('Administrador general')
+def veterinario_create(request):
+    if request.method == 'POST':
+        form = VeterinarioForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Veterinario creado')
+            return redirect('veterinarios_admin_list')
+    else:
+        form = VeterinarioForm()
+    return render(request, 'Page/VeterinariosAdmin/Form.html', {'form': form})
+
+@login_required
+@requires_roles('Administrador general')
+def veterinario_edit(request, pk):
+    vet = Veterinario.objects.get(pk=pk)
+    if request.method == 'POST':
+        form = VeterinarioForm(request.POST, instance=vet)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Veterinario actualizado')
+            return redirect('veterinarios_admin_list')
+    else:
+        form = VeterinarioForm(instance=vet)
+    return render(request, 'Page/VeterinariosAdmin/Form.html', {'form': form})
+
+@login_required
+@requires_roles('Administrador general')
+def veterinario_delete(request, pk):
+    vet = Veterinario.objects.get(pk=pk)
+    vet.delete()
+    messages.success(request, 'Veterinario eliminado')
+    return redirect('veterinarios_admin_list')
+
+@login_required
 def administracion(request):
     # Métricas simples
     total_turnos = Turno.objects.count()
@@ -281,8 +360,8 @@ def rol_quirofano(request):
         'title': 'Encargado de quirófano',
         'subtitle': 'Coordina cirugías, materiales y horarios del quirófano. Gestión de inventario quirúrgico. Calendario de cirugías.',
         'actions': [
-            {'label': 'Calendario de cirugías', 'icon': 'calendar', 'url': '/administracion'},
-            {'label': 'Inventario quirúrgico', 'icon': 'clipboard-list', 'url': '#'},
+            {'label': 'Calendario de cirugías', 'icon': 'calendar', 'url': '/roles/acciones/quirofano/calendario/'},
+            {'label': 'Inventario quirúrgico', 'icon': 'clipboard-list', 'url': '/roles/acciones/quirofano/inventario/'},
         ],
     }
     return render(request, 'Page/Roles/sector.html', ctx)
@@ -294,8 +373,8 @@ def rol_laboratorio(request):
         'title': 'Técnico en laboratorio',
         'subtitle': 'Realiza análisis clínicos y carga resultados. Registro de resultados de laboratorio. Acceso a estudios del paciente.',
         'actions': [
-            {'label': 'Resultados de laboratorio', 'icon': 'flask-conical', 'url': '#'},
-            {'label': 'Estudios del paciente', 'icon': 'file-text', 'url': '#'},
+            {'label': 'Resultados de laboratorio', 'icon': 'flask-conical', 'url': '/roles/acciones/laboratorio/resultados/'},
+            {'label': 'Estudios del paciente', 'icon': 'file-text', 'url': '/roles/acciones/laboratorio/estudios/'},
         ],
     }
     return render(request, 'Page/Roles/sector.html', ctx)
@@ -307,8 +386,8 @@ def rol_farmacia(request):
         'title': 'Encargado de farmacia',
         'subtitle': 'Gestiona medicamentos, stock y recetas. Control de stock y vencimientos. Registro de entrega de recetas.',
         'actions': [
-            {'label': 'Stock y vencimientos', 'icon': 'package', 'url': '#'},
-            {'label': 'Entrega de recetas', 'icon': 'clipboard-check', 'url': '#'},
+            {'label': 'Stock y vencimientos', 'icon': 'package', 'url': '/roles/acciones/farmacia/stock/'},
+            {'label': 'Entrega de recetas', 'icon': 'clipboard-check', 'url': '/roles/acciones/farmacia/entregas/'},
         ],
     }
     return render(request, 'Page/Roles/sector.html', ctx)
@@ -321,7 +400,7 @@ def rol_peluqueria(request):
         'subtitle': 'Recibe turnos estéticos. Agenda de servicios estéticos. Registro de servicios realizados.',
         'actions': [
             {'label': 'Agenda estética', 'icon': 'calendar', 'url': '/panel/turnos/'},
-            {'label': 'Servicios realizados', 'icon': 'scissors', 'url': '#'},
+            {'label': 'Servicios realizados', 'icon': 'scissors', 'url': '/roles/acciones/peluqueria/servicios/'},
         ],
     }
     return render(request, 'Page/Roles/sector.html', ctx)
@@ -334,7 +413,7 @@ def rol_internacion(request):
         'subtitle': 'Controla internaciones y medicación. Plan de medicación por paciente. Alertas de horarios de medicación.',
         'actions': [
             {'label': 'Internaciones en curso', 'icon': 'hospital', 'url': '/administracion'},
-            {'label': 'Plan de medicación', 'icon': 'pill', 'url': '#'},
+            {'label': 'Plan de medicación', 'icon': 'pill', 'url': '/roles/acciones/internacion/medicacion/'},
         ],
     }
     return render(request, 'Page/Roles/sector.html', ctx)
@@ -346,8 +425,8 @@ def rol_guarderia(request):
         'title': 'Cuidador temporal / guardería',
         'subtitle': 'Gestión de hospedaje y paseos. Agenda de guardería. Registro de actividades.',
         'actions': [
-            {'label': 'Agenda de guardería', 'icon': 'calendar', 'url': '#'},
-            {'label': 'Registro de actividades', 'icon': 'list-todo', 'url': '#'},
+            {'label': 'Agenda de guardería', 'icon': 'calendar', 'url': '/roles/acciones/guarderia/agenda/'},
+            {'label': 'Registro de actividades', 'icon': 'list-todo', 'url': '/roles/acciones/guarderia/actividades/'},
         ],
     }
     return render(request, 'Page/Roles/sector.html', ctx)
@@ -359,7 +438,7 @@ def rol_limpieza(request):
         'title': 'Personal de limpieza',
         'subtitle': 'Mantenimiento y desinfección. Plan de limpieza y checklist.',
         'actions': [
-            {'label': 'Plan de limpieza', 'icon': 'check-square', 'url': '#'},
+            {'label': 'Plan de limpieza', 'icon': 'check-square', 'url': '/roles/acciones/limpieza/plan/'},
         ],
     }
     return render(request, 'Page/Roles/sector.html', ctx)
@@ -371,8 +450,8 @@ def rol_stock(request):
         'title': 'Encargado de stock / depósito',
         'subtitle': 'Controla insumos y productos. Inventario y reposición. Alertas por stock bajo.',
         'actions': [
-            {'label': 'Inventario', 'icon': 'boxes', 'url': '#'},
-            {'label': 'Alertas de stock', 'icon': 'alert-triangle', 'url': '#'},
+            {'label': 'Inventario', 'icon': 'boxes', 'url': '/roles/acciones/stock/inventario/'},
+            {'label': 'Alertas de stock', 'icon': 'alert-triangle', 'url': '/roles/acciones/stock/alertas/'},
         ],
     }
     return render(request, 'Page/Roles/sector.html', ctx)
@@ -384,8 +463,8 @@ def rol_marketing(request):
         'title': 'Community manager / marketing',
         'subtitle': 'Promociones y comunicación. Campañas y publicaciones. Métricas de alcance.',
         'actions': [
-            {'label': 'Campañas', 'icon': 'megaphone', 'url': '#'},
-            {'label': 'Métricas', 'icon': 'chart-bar', 'url': '#'},
+            {'label': 'Campañas', 'icon': 'megaphone', 'url': '/roles/acciones/marketing/campanas/'},
+            {'label': 'Métricas', 'icon': 'chart-bar', 'url': '/roles/acciones/marketing/metricas/'},
         ],
     }
     return render(request, 'Page/Roles/sector.html', ctx)
@@ -397,8 +476,8 @@ def rol_cajero(request):
         'title': 'Cajero',
         'subtitle': 'Cobros y facturación en caja. Registro de cobros. Emisión de comprobantes.',
         'actions': [
-            {'label': 'Registrar cobro', 'icon': 'credit-card', 'url': '#'},
-            {'label': 'Comprobantes', 'icon': 'file-text', 'url': '#'},
+            {'label': 'Registrar cobro', 'icon': 'credit-card', 'url': '/roles/acciones/cajero/cobros/'},
+            {'label': 'Comprobantes', 'icon': 'file-text', 'url': '/roles/acciones/cajero/comprobantes/'},
         ],
     }
     return render(request, 'Page/Roles/sector.html', ctx)
@@ -410,8 +489,8 @@ def rol_contador(request):
         'title': 'Contador',
         'subtitle': 'Balances, ingresos, gastos y reportes. Reportes contables. Resumen de caja.',
         'actions': [
-            {'label': 'Reportes contables', 'icon': 'file-chart-pie', 'url': '#'},
-            {'label': 'Resumen de caja', 'icon': 'wallet', 'url': '#'},
+            {'label': 'Reportes contables', 'icon': 'file-chart-pie', 'url': '/roles/acciones/contador/reportes/'},
+            {'label': 'Resumen de caja', 'icon': 'wallet', 'url': '/roles/acciones/contador/resumen/'},
         ],
     }
     return render(request, 'Page/Roles/sector.html', ctx)
@@ -448,8 +527,8 @@ def rol_proveedor(request):
         'title': 'Proveedor',
         'subtitle': 'Gestiona entregas y facturas. Registro de entregas. Consulta de facturas.',
         'actions': [
-            {'label': 'Entregas', 'icon': 'truck', 'url': '#'},
-            {'label': 'Facturas', 'icon': 'receipt', 'url': '#'},
+            {'label': 'Entregas', 'icon': 'truck', 'url': '/roles/acciones/proveedor/entregas/'},
+            {'label': 'Facturas', 'icon': 'receipt', 'url': '/roles/acciones/proveedor/facturas/'},
         ],
     }
     return render(request, 'Page/Roles/sector.html', ctx)
@@ -462,7 +541,262 @@ def rol_soporte(request):
         'subtitle': 'Mantenimiento y actualización de plataforma. Acceso técnico. Revisión de logs y estado.',
         'actions': [
             {'label': 'Panel del sistema', 'icon': 'cpu', 'url': '/administracion'},
-            {'label': 'Logs y estado', 'icon': 'file-text', 'url': '#'},
+            {'label': 'Logs y estado', 'icon': 'file-text', 'url': '/roles/acciones/soporte/logs/'},
         ],
     }
     return render(request, 'Page/Roles/sector.html', ctx)
+
+# Acciones específicas (páginas genéricas reutilizando sector.html)
+@login_required
+@requires_roles('Administrador general', 'Encargado de quirófano')
+def accion_quirofano_inventario(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Inventario quirúrgico',
+        'subtitle': 'Listado y control de materiales del quirófano',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Encargado de quirófano')
+def accion_quirofano_calendario(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Calendario de cirugías',
+        'subtitle': 'Programación y agenda de cirugías',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Técnico en laboratorio')
+def accion_laboratorio_resultados(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Resultados de laboratorio',
+        'subtitle': 'Carga y consulta de resultados',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Técnico en laboratorio')
+def accion_laboratorio_estudios(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Estudios del paciente',
+        'subtitle': 'Acceso y gestión de estudios',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Encargado de farmacia')
+def accion_farmacia_stock(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Stock y vencimientos',
+        'subtitle': 'Control de stock y fechas de vencimiento',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Encargado de farmacia')
+def accion_farmacia_entregas(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Entrega de recetas',
+        'subtitle': 'Registro de entregas de medicamentos por receta',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Peluquero canino/felino')
+def accion_peluqueria_servicios(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Servicios realizados',
+        'subtitle': 'Registro de servicios estéticos realizados',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Encargado de internación')
+def accion_internacion_medicacion(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Plan de medicación',
+        'subtitle': 'Plan y alertas de medicación por paciente',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Cuidador temporal / guardería')
+def accion_guarderia_agenda(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Agenda de guardería',
+        'subtitle': 'Calendario y reservas de guardería',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Cuidador temporal / guardería')
+def accion_guarderia_actividades(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Registro de actividades',
+        'subtitle': 'Actividades por mascota durante guardería',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Personal de limpieza')
+def accion_limpieza_plan(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Plan de limpieza',
+        'subtitle': 'Checklist y cronograma de limpieza',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Encargado de stock / depósito')
+def accion_stock_inventario(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Inventario de stock',
+        'subtitle': 'Listado y reposición de insumos y productos',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Encargado de stock / depósito')
+def accion_stock_alertas(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Alertas de stock',
+        'subtitle': 'Alertas por niveles bajos y vencimientos',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Community manager / marketing')
+def accion_marketing_campanas(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Campañas y publicaciones',
+        'subtitle': 'Gestión de campañas y publicaciones sociales',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Community manager / marketing')
+def accion_marketing_metricas(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Métricas de alcance',
+        'subtitle': 'KPIs y analítica de campañas',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Cajero')
+def accion_cajero_cobros(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Registrar cobro',
+        'subtitle': 'Registro de cobros y medios de pago',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Cajero')
+def accion_cajero_comprobantes(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Comprobantes',
+        'subtitle': 'Emisión y consulta de comprobantes',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Contador')
+def accion_contador_reportes(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Reportes contables',
+        'subtitle': 'Balances, ingresos y gastos',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Contador')
+def accion_contador_resumen(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Resumen de caja',
+        'subtitle': 'Consolidado de caja',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Proveedor')
+def accion_proveedor_entregas(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Entregas',
+        'subtitle': 'Registro de entregas',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Proveedor')
+def accion_proveedor_facturas(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Facturas',
+        'subtitle': 'Consulta de facturas',
+        'actions': [],
+    })
+
+@login_required
+@requires_roles('Administrador general', 'Soporte técnico del sistema')
+def accion_soporte_logs(request):
+    return render(request, 'Page/Roles/sector.html', {
+        'title': 'Logs y estado del sistema',
+        'subtitle': 'Monitoreo y revisión de logs',
+        'actions': [],
+    })
+
+# API: Envío de emails (para Postman)
+@csrf_exempt
+def api_send_email(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except Exception:
+        return JsonResponse({'error': 'JSON inválido'}, status=400)
+    to = data.get('to')
+    subject = data.get('subject', 'Mensaje de PatitasFelices')
+    message = data.get('message', '')
+    if not to:
+        return JsonResponse({'error': 'Falta parámetro to'}, status=400)
+    sent = send_mail(subject, message, None, [to], fail_silently=False)
+    return JsonResponse({'status': 'ok', 'sent': sent})
+
+@csrf_exempt
+def api_password_reset(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except Exception:
+        return JsonResponse({'error': 'JSON inválido'}, status=400)
+    email = data.get('email')
+    if not email:
+        return JsonResponse({'error': 'Falta parámetro email'}, status=400)
+    form = PasswordResetForm({'email': email})
+    if form.is_valid():
+        form.save(request=request)
+        return JsonResponse({'status': 'ok'})
+    return JsonResponse({'error': 'Email no válido o no registrado'}, status=400)
+
+# Conexion con Postman
+class UsuarioViewSet(viewsets.ModelViewSet):
+    queryset = Usuario.objects.all()
+    serializer_class = UsuarioSerializer
+# Confirmación de email con token y vencimiento
+def confirmar_email(request, token):
+    try:
+        data = signing.loads(token, max_age=settings.EMAIL_CONFIRMATION_TIMEOUT, salt='email-confirm')
+        uid = data.get('uid')
+        user = User.objects.get(pk=uid)
+        user.is_active = True
+        user.save()
+        messages.success(request, 'Email confirmado. Ya puedes iniciar sesión.')
+        return redirect('login')
+    except signing.BadSignature:
+        messages.error(request, 'Token inválido o manipulado')
+    except signing.SignatureExpired:
+        messages.error(request, 'El enlace ha expirado. Vuelve a registrarte o solicita un nuevo correo de confirmación.')
+    except Exception:
+        messages.error(request, 'No fue posible confirmar el email')
+    return redirect('login')

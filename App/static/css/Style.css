@@ -138,17 +138,28 @@ body {
 
 .bg-happy-dog {
   background-image: url('/static/images/happy-dog-at-veterinary-clinic.jpg');
-  object-fit: cover;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+
 }
 
 .bg-cat-exam {
   background-image: url('/static/images/cat-being-examined-by-veterinarian.jpg');
   object-fit: cover;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+
 }
 
 .bg-waiting-room {
   background-image: url('/static/images/veterinary-clinic-waiting-room.jpg');
   object-fit: cover;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+
 }
 
 .carousel-overlay {
@@ -283,8 +294,32 @@ body {
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
+  gap: 2rem;
   margin-bottom: 2rem;
+  padding-inline: 1rem;
+}
+
+/* Masonry (Pinterest-like) layout */
+/* removed masonry layout */
+
+.role-details ul {
+  padding-left: 2.5rem;
+}
+
+.profile-center-wrapper {
+  min-height: calc(100vh - 160px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 640px;
+  background: var(--card);
+  border: 1px solid var(--light-blue);
+  border-radius: var(--radius);
+  padding: 1.5rem;
 }
 
 /* Tables */
@@ -551,6 +586,37 @@ body {
 /* Forms */
 .form-group {
   margin-bottom: 1.5rem;
+}
+
+.form-compact {
+  --compact-label-size: 0.8125rem;
+  --compact-input-size: 0.875rem;
+  --compact-input-pad: 0.5rem;
+}
+
+.form-compact .card {
+  padding: 1rem;
+}
+
+.form-compact .form-label {
+  font-size: var(--compact-label-size);
+  margin-bottom: 0.35rem;
+}
+
+.form-compact .form-input,
+.form-compact .form-select,
+.form-compact .form-textarea {
+  padding: var(--compact-input-pad);
+  font-size: var(--compact-input-size);
+}
+
+.form-compact .form-textarea {
+  min-height: 96px;
+}
+
+.form-compact .form-grid {
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 /* Modal */

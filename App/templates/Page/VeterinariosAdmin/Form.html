@@ -1,0 +1,29 @@
+{% extends 'Base.html' %}
+{% load lucide %}
+{% block title %}ABM Veterinarios{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:620px;">
+    <h2 class="section-title" style="display:flex; align-items:center; gap:0.5rem;">{% lucide "stethoscope" %} Datos del Veterinario</h2>
+    <p class="section-subtitle">Asignación de profesional y especialidad</p>
+    <form method="post" class="card form-compact">
+      {% csrf_token %}
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Usuario *</label>
+          {{ form.usuario }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Especialidad *</label>
+          {{ form.especialidad }}
+        </div>
+      </div>
+      <div style="display:flex; gap:0.5rem;">
+        {% if request.user.is_superuser or request.user.usuario_profile.rol.nombre_rol == 'Administrador general' %}
+          <button class="btn btn-lg" type="submit">Guardar</button>
+        {% endif %}
+        <a class="btn btn-lg" href="/panel/veterinarios/">Cancelar</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

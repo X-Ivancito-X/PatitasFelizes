@@ -3,10 +3,10 @@
 {% block title %}Nuevo Turno{% endblock %}
 {% block content %}
 <section class="section">
-  <div class="container" style="max-width:900px;">
+  <div class="container" style="max-width:640px;">
     <h2 class="section-title" style="display:flex; align-items:center; gap:0.5rem;">{% lucide "calendar-days" %} Nuevo Turno</h2>
     <p class="section-subtitle">Crear un nuevo turno en el sistema</p>
-    <form method="post" class="card" style="padding:1.5rem;">
+    <form method="post" class="card form-compact">
       {% csrf_token %}
       <div class="form-grid">
         <div class="form-group">

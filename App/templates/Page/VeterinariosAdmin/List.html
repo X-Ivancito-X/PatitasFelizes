@@ -1,0 +1,73 @@
+{% extends 'Base.html' %}
+{% load lucide %}
+{% block title %}ABM Veterinarios{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="header-actions">
+      <div>
+        <h2 class="section-title" style="display:flex; align-items:center; gap:0.5rem;">{% lucide "stethoscope" %} ABM de Veterinarios</h2>
+        <p class="section-subtitle">Alta, baja y modificación de profesionales</p>
+      </div>
+      {% if request.user.is_superuser or request.user.usuario_profile.rol.nombre_rol == 'Administrador general' %}
+        <a href="/panel/veterinarios/nuevo/" class="btn">{% lucide "plus" %} Nuevo Veterinario</a>
+      {% endif %}
+    </div>
+
+    <form method="get" class="filter-card" style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:center;">
+      <div style="flex:1 1 280px;">
+        <input type="text" name="q" value="{{ q }}" class="form-input" placeholder="Buscar por nombre, apellido o especialidad" />
+      </div>
+      <div style="flex:1 1 220px;">
+        <select name="order" class="form-select">
+          <option value="usuario__apellido" {% if order == 'usuario__apellido' %}selected{% endif %}>Apellido</option>
+          <option value="usuario__nombre" {% if order == 'usuario__nombre' %}selected{% endif %}>Nombre</option>
+          <option value="especialidad" {% if order == 'especialidad' %}selected{% endif %}>Especialidad</option>
+        </select>
+      </div>
+      <button class="btn" type="submit">Aplicar</button>
+    </form>
+
+    <div class="card">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Apellido</th>
+            <th>Nombre</th>
+            <th>Especialidad</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in page_obj.object_list %}
+          <tr>
+            <td>{{ v.usuario.apellido }}</td>
+            <td>{{ v.usuario.nombre }}</td>
+            <td>{{ v.especialidad }}</td>
+            <td>
+              {% if request.user.is_superuser or request.user.usuario_profile.rol.nombre_rol == 'Administrador general' %}
+                <a href="/panel/veterinarios/editar/{{ v.id_veterinario }}/" class="btn">Editar</a>
+                <a href="/panel/veterinarios/eliminar/{{ v.id_veterinario }}/" class="btn">Eliminar</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" style="text-align:center; color: rgba(1,56,71,0.7);">No se encontraron veterinarios</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:1rem; display:flex; gap:0.5rem; align-items:center;">
+      {% if page_obj.has_previous %}
+        <a class="btn" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&order={{ order }}">Anterior</a>
+      {% endif %}
+      <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a class="btn" href="?page={{ page_obj.next_page_number }}&q={{ q }}&order={{ order }}">Siguiente</a>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

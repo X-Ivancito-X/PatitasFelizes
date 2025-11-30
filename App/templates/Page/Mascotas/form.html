@@ -3,10 +3,10 @@
 {% block title %}Nueva Mascota{% endblock %}
 {% block content %}
 <section class="section">
-  <div class="container" style="max-width:900px;">
+  <div class="container" style="max-width:620px;">
     <h2 class="section-title" style="display:flex; align-items:center; gap:0.5rem;">{% lucide "dog" %} Nueva Mascota</h2>
     <p class="section-subtitle">Registrar una nueva mascota en el sistema</p>
-    <form method="post" class="card" style="padding:1.5rem;">
+    <form method="post" class="card form-compact">
       {% csrf_token %}
       <div class="form-grid">
         <div class="form-group">

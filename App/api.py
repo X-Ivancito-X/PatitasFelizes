@@ -34,6 +34,12 @@ class TurnoViewSet(viewsets.ModelViewSet):
             qs = qs.filter(mascota__nombre__icontains=q)
         return qs
 
+# Conexion con Postman
+class UsuarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usuario
+        fields = '__all__'
+
 router = routers.DefaultRouter()
 router.register(r'mascotas', MascotaViewSet)
 router.register(r'turnos', TurnoViewSet)
